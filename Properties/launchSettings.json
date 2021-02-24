@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "passgeneretor": {
+      "commandName": "Project",
+      "commandLineArgs": "-u \"C:\\Users\\inzerillo\\code\\pass-generetor\\passgeneretor\\config\\TextFile1.txt\" -o \"C:\\Users\\inzerillo\\code\\pass-generetor\\passgeneretor\\config\\output.txt\""
+    }
+  }
+}

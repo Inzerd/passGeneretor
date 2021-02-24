@@ -1,0 +1,17 @@
+﻿name:Davide	
+fullname: Inzerillo
+date_birthday: 09/04/1986
+years: 34
+address_home: via Molino 16
+date_wedding: 01/09/2018
+email: djynze@gmail.com	
+hobby: [mtb,pc]
+work: programmer
+graduated: università
+address_work: piazza della vittoria 
+address_holiday_home:
+nickname: djynze
+wife_name: Michela
+son_name:
+daughter_name: 
+home_animal_name: [Mirtilla,Miele]

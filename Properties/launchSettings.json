@@ -2,7 +2,7 @@
   "profiles": {
     "passgeneretor": {
       "commandName": "Project",
-      "commandLineArgs": "-u \"C:\\Users\\inzerillo\\code\\pass-generetor\\passgeneretor\\config\\TextFile1.txt\" -o \"C:\\Users\\inzerillo\\code\\pass-generetor\\passgeneretor\\config\\output.txt\""
+      "commandLineArgs": "-u \".\\testing\\userTest.txt\" -o \"testing\\output.txt\" -t \"testing\\charToTransform.txt\" -l 8"
     }
   }
 }

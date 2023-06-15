@@ -1,119 +1,182 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using passgeneretor.trasformation;
+using passgeneretor.Models;
+using System.Threading;
+using System.Collections.Generic;
 
 namespace passgeneretor
 {
-	class Program
-	{
-		private static bool useCombinatedString;
-		private static bool useSpecialChar;
-		private static int passwordLen;
-		private static string urlToOutPut;
-		private static string urlToUserInfo;
-		private static UserInfo userInfo;
-		private static PassComposer passComposer;
-		static void Main(string[] args)
-		{
-			Console.WriteLine("\n\tWelcome On P4ssG3n3r3Th0r\n");
-			Console.WriteLine("For read manual execute program with -h parameter");
-			if (args.Count() <= 1 || args[0] == "-h")
-			{
-				Console.WriteLine(WellKnow.manual);
-				return;
-			}
-			for (var iter = 0; iter < args.Count(); iter++)
-			{
-				switch (args[iter])
-				{
-					case "-h":
-						Console.WriteLine("Can't call help menu with other param");
-						return;
-					case "-u":
-						//mandatory
-						iter++;
-						urlToUserInfo = args[iter];
-						if (!File.Exists(urlToUserInfo))
-						{
-							Console.WriteLine("the file " + urlToUserInfo + " not exist, please check the path!!");
-							return;
-						}
-						break;
-					case "-o":
-						//mandatory
-						iter++;
-						var outputPath = args[iter];
-						try
-						{
-							if (!File.Exists(outputPath))
-							{
-								File.Create(outputPath);
-							}
-							else
-							{
-								File.Open(outputPath, FileMode.Append);
-							}
-						}
-						catch (Exception caught)
-						{
-							Console.WriteLine($"Error: -o param need correct url. Path insert: {args[iter + 1]}" +
-								$"\nCheck if you have permision to read and write:\n{caught}");
-							//terminare l'applicazione
-						}
-						urlToOutPut = args[iter++];
-						break;
-					case "-t":
-						Console.WriteLine("Loading transformation information...");
-						string transformCharFilePath = "";
-						if (File.Exists(args[iter + 1]))
-						{
-							transformCharFilePath = args[iter++];
-						}
-						passComposer = new PassComposer(transformCharFilePath);
-						break;
-					case "-c":
-						useCombinatedString = true;
-						break;
-					case "-s":
-						useSpecialChar = true;
-						break;
-					case "-l":
-						int.TryParse(args[iter++], out passwordLen);
-						break;
-				}
-			}
-			try
-			{
-				Console.WriteLine("Loading user Information...");
-				userInfo = new UserInfo(urlToUserInfo);
+  class Program
+  {
+    private static FileStream outputFile;
+    private static string urlToUserInfo;
+    private static UserInfo userInfo;
+    private static PassComposerManager passComposer;
+    static void Main(string[] args)
+    {
+      Console.WriteLine("\n\tWelcome On P4ssG3n3r3Th0r\n");
+      Console.WriteLine("For read manual execute program with -h parameter");
 
-			}
-			catch
-			{
-				Console.WriteLine("user info file is not correct or not exist, please check file!!!");
-				return;
-			}
-			foreach (var token in userInfo.infoList)
-			{
-				/*Cicla tutte le userInfo
-			 per ogni token trovato richiama la funzione che combina una parola con altre "n" parole (parametro passato)
-			 la funzione può effettuare:
-					- trasformazioni: per ogni parola trovata restituisce l'originale e le sue trasformazioni
-					- combinazioni: ogni parola viene divisa in sillabe e composta con le altre (anche ques'ultime eventualmente suddivide)
-													questo serve per la creazione di password complesse
-			*/
-			}
-		}
-		private List<string> GetStringsTransformed(string token)
-		{
-			var res = new List<String>();
-			foreach (var transf in passComposer.TranformationList)
-			{
-				whiel
-			}
-			return res;
-		}
-	}
+      #region read param
+      if (args.Count() == 0 || (args.Count() == 1 && args[0] == "-h"))
+      {
+        Console.WriteLine(WellKnow.manual);
+        return;
+      }
+      //check mandatory paramenter
+      CheckAndSetmandatoryParamenter(args);
+      //save parameter			
+      CheckAndSetOtherParamenter(args);
+      #endregion
+
+      #region start the magic
+      if (!(passComposer.permutation && passComposer.combination))
+      {
+        Console.WriteLine($"Ehm....");
+        Thread.Sleep(2000);
+        Console.WriteLine("you missing permutation and/or combination parameter");
+        Console.WriteLine("please read manual and try again ;)");
+        Console.WriteLine(WellKnow.manual);
+        return;
+      }
+
+      Console.WriteLine($"{DateTime.Now.ToString()}: Create a complete list of permutation");
+      var permutationDictionary = new Dictionary<string, List<string>>();
+      int totalList = 0;
+      if (passComposer.permutation)
+      {
+        permutationDictionary = Transformation.GetPermutationDictionary(userInfo.infoList, passComposer, out totalList);
+      }
+      else
+      {
+        userInfo.infoList.ForEach(info => permutationDictionary.Add(info, new List<string>() { info }));
+        totalList = userInfo.infoList.Count();
+      }
+      Console.WriteLine($"{DateTime.Now.ToString()}: List of permutation completed");
+
+      if (passComposer.combination)
+      {
+        if (totalList > 10000)
+        {
+          Console.WriteLine($"The number of permutation is very high, are you sure you want start terms permutation?");
+          Console.WriteLine($"Y/y: to start permutation - N/n: to not start permutation");
+          var userChoice = Console.ReadLine();
+          if (userChoice.ToLower() == "y")
+          {
+            Console.WriteLine($"Go to make a coffee human, and one for me also, the permutation start");
+            Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+          }
+          else
+          {
+            Console.WriteLine($"Good choice, start to write output file");
+            foreach (var key in permutationDictionary.Keys)
+            {
+              passComposer.WritePassword(permutationDictionary[key]);
+            }
+          }
+        }
+        else
+        {
+          Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+        }
+      }
+      Console.WriteLine($"{DateTime.Now.ToString()}: End!!!! maybe XD");
+      Thread.Sleep(2000);
+      Console.WriteLine($"{DateTime.Now.ToString()}: OK its a joke this is the END!!!");
+      #endregion
+
+    }
+    private static void CheckAndSetmandatoryParamenter(string[] args)
+    {
+      try
+      {
+        //user file information to use for permutation and trasformation
+        if (!args.Contains("-u"))
+        {
+          Console.WriteLine("Cannot execute program without user information list!");
+          return;
+        }
+        var currentIndex = Array.IndexOf(args, "-u");
+        urlToUserInfo = args[++currentIndex];
+        Console.WriteLine("Loading user Information...");
+        if (string.IsNullOrEmpty(urlToUserInfo) || !File.Exists(urlToUserInfo))
+        {
+          Console.WriteLine($"the file: \"{urlToUserInfo}\"  not exist, please check the path!!");
+          return;
+        }
+        userInfo = new UserInfo(urlToUserInfo);
+
+        //output path
+        var outputPath = "";
+        currentIndex = Array.IndexOf(args, "-o");
+        if (currentIndex <= -1)
+        {
+          outputPath = Path.Combine(Directory.GetCurrentDirectory(), "passGeneraThor_output.txt");
+        }
+        else
+        {
+          outputPath = args[++currentIndex];
+        }
+
+        //if there aren't any PassComposer setted from user, set 
+        if (passComposer == null)
+        {
+          passComposer = new PassComposerManager();
+        }
+
+        passComposer.OutputFilePath = outputPath;
+        currentIndex = Array.IndexOf(args, "-l");
+        if (currentIndex <= -1)
+        {
+          throw new ArgumentNullException("-l lenght paramenter is mandatory please added it");
+        }
+        int.TryParse(args[++currentIndex], out passComposer.minLenght);
+      }
+      catch (Exception caught)
+      {
+#if DEBUG
+        Console.WriteLine($"Error: {caught}");
+#else
+        Console.WriteLine($"Ops!!!, somethis its go wrong!!! sorry XD");        
+#endif
+        throw new Exception();
+      }
+    }
+
+    private static void CheckAndSetOtherParamenter(string[] args)
+    {
+      for (var iter = 0; iter < args.Count(); iter++)
+      {
+        switch (args[iter])
+        {
+          case "-rule":
+            //set rule for validation password, if there aren't rule explained use only minLenght
+            iter++;
+            var rule = args[iter];
+            passComposer.ruleCaseLetter = rule.Contains("c");
+            passComposer.ruleUseNumber = rule.Contains("n");
+            passComposer.ruleCaseLetter = rule.Contains("s");
+            break;
+          case "-t":
+            Console.WriteLine("Loading transformation information...");
+            iter++;
+            if (File.Exists(args[iter]))
+            {
+              passComposer.SetConfiguration(args[iter]);
+            }
+            break;
+          case "-c":
+            passComposer.combination = true;
+            break;
+          case "-p":
+            passComposer.permutation = true;
+            break;
+
+        }
+      }
+    }
+
+  }
 }

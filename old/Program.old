@@ -1,0 +1,140 @@
+﻿/* using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace passgeneretor
+{
+  class ProgramOld
+  {
+    private static FileStream outputFile;
+    private static string urlToUserInfo;
+    private static UserInfo userInfo;
+    private static PassComposerManager passComposer;
+    static void Main(string[] args)
+    {
+      Console.WriteLine("\n\tWelcome On P4ssG3n3r3Th0r\n");
+      Console.WriteLine("For read manual execute program with -h parameter");
+
+      #region read param
+      if (args.Count() == 0 || (args.Count() == 1 && args[0] == "-h"))
+      {
+        Console.WriteLine(WellKnow.manual);
+        return;
+      }
+
+      //save parameter			
+      for (var iter = 0; iter < args.Count(); iter++)
+      {
+        switch (args[iter])
+        {
+          case "-h":
+            Console.WriteLine("Can't call help menu with other param");
+            return;
+          case "-u":
+            //mandatory
+            iter++;
+            urlToUserInfo = args[iter];
+            if (!File.Exists(urlToUserInfo))
+            {
+              Console.WriteLine("the file " + urlToUserInfo + " not exist, please check the path!!");
+              throw new FileNotFoundException();
+            }
+            break;
+          case "-o":
+            //mandatory
+            iter++;
+            var outputPath = args[iter];
+            try
+            {
+              if (!File.Exists(outputPath))
+              {
+                outputFile = File.Create(outputPath);
+              }
+              else
+              {
+                outputFile = File.Open(outputPath, FileMode.Append);
+              }
+            }
+            catch (Exception caught)
+            {
+              Console.WriteLine($"Error: -o param need correct url. Path insert: {args[iter + 1]}" +
+                $"\nCheck if you have permision to read and write:\n{caught}");
+              //terminare l'applicazione
+            }
+            break;
+          case "-t":
+            Console.WriteLine("Loading transformation information...");
+            iter++;
+            if (File.Exists(args[iter]))
+            {
+              passComposer.SetConfiguration(args[iter]);
+            }
+            break;
+          case "-c":
+            passComposer.combined = true;
+            break;
+          case "-S":
+            passComposer.specialChar = true;
+            break;
+          case "-l":
+            int.TryParse(args[iter++], out passComposer.lenght);
+            break;
+          default:
+            /*aggiungere in questa sezione tutti i restanti casi che non hanno bisogno di un path 
+             */
+break;
+        }
+      }
+      #endregion
+
+      try
+{
+  if (!args.Contains("-u"))
+  {
+    Console.WriteLine("Cannot execute program without user information list!");
+    return;
+  }
+  Console.WriteLine("Loading user Information...");
+  if (string.IsNullOrEmpty(urlToUserInfo) || !File.Exists(urlToUserInfo))
+  {
+    Console.WriteLine("the file " + urlToUserInfo + " not exist, please check the path!!");
+    throw new FileNotFoundException();
+  }
+  userInfo = new UserInfo(urlToUserInfo);
+
+  //if there aren't any PassComposer setted from user, set 
+  if (passComposer == null)
+  {
+    passComposer = new PassComposerManager();
+  }
+}
+catch
+{
+  Console.WriteLine("user info file is not correct or not exist, please check file!!!");
+  return;
+}
+foreach (var token in userInfo.infoList)
+{
+
+
+  /*Cicla tutte le userInfo
+ per ogni token trovato richiama la funzione che combina una parola con altre "n" parole (parametro passato)
+ la funzione può effettuare:
+    - trasformazioni: per ogni parola trovata restituisce l'originale e le sue trasformazioni
+    - combinazioni: ogni parola viene divisa in sillabe e composta con le altre (anche ques'ultime eventualmente suddivide)
+                    questo serve per la creazione di password complesse
+*/
+}
+    }
+    private List<string> GetStringsTransformed(string token)
+{
+  var res = new List<String>();
+  foreach (var transf in passComposer.GetTransformationList())
+  {
+    Console.WriteLine("bo non mi ricordo cosa devo fare XD");
+  }
+  return res;
+}
+  }
+} */

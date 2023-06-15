@@ -1,0 +1,8 @@
+.vscode/
+bin/
+obj/
+testing/
+testing/output.txt
+testing/userInfolist.txt
+testing/userTest.txt
+Properties/launchSettings.json

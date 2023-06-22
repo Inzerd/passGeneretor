@@ -1,5 +1,19 @@
 # passGeneretor
 
+passGenerator tool allow user to create a custom worldlist to generate password or other list of string.
+passGenerator (at this point the tool) have two execution modality that can work togher:
+        
+        - permutation modality: gived a list of string, return for any term all swap combination defined in
+        passComposerConfiguration.json or passed via command line
+        for example: gived "mouse" -> in configuration we set char "e" to swap in ["3","&"] and the result are:
+        ["m0use","m0us3","m0us&","mous3","mous&"]
+        
+        - combination modality: gived a list of string, return a new list with all possibile combination, for example: gived ["a","b","c"] -> return ["abc","acb","bac","bca","cba","cab"], if in  configuration there are "DelimitatorList" valorized, "tool" use this list to create new combination other those above showed.
+        The number of term used for combination are defined in configuration file
+
+this two modality can works togher, first start permutation modality to generate the lists to combination, and after start combination, the combination modality not combination term from same "radice", this means that tool need almost two term passed to create combination,
+for example run: 'passComposer -p -c -u ./listOfTerm.txt" -o /output.txt -l 8'
+
 Mandatory:
         -u [url]: file info user mandatory
         -o [url]: output file
@@ -13,16 +27,11 @@ Options:
                 s = use special char
 
         -t [url]: file with transformation from char/ string to number/ special char/ string or another transformation string
+
+Summary:
         -c combination: combined any trasfomartion will creating more pass complex
         -p permutation: substitute char in term with Trasformation List rule in configuration json file
         -h manual: show manual in console
-
-
-permutataion: Given a list of terms replaces each character qith the past configuration.
-Proceed to create any possible permutation combination 
-
-combination: Given a Dictionary of terms genereted previously by the permutation proceeds to combine each term for any key, returning every possbile combination.
-Each combination before being written to output files is checked by the rule passed to the tool.        
 
 FUTURE RELEASED:
 

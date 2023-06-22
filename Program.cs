@@ -10,7 +10,6 @@ namespace passgeneretor
 {
   class Program
   {
-    private static FileStream outputFile;
     private static string urlToUserInfo;
     private static UserInfo userInfo;
     private static PassComposerManager passComposer;
@@ -49,15 +48,22 @@ namespace passgeneretor
       {
         permutationDictionary = Transformation.GetPermutationDictionary(userInfo.infoList, passComposer, out totalList);
       }
-      else
-      {
-        userInfo.infoList.ForEach(info => permutationDictionary.Add(info, new List<string>() { info }));
-        totalList = userInfo.infoList.Count();
-      }
+
       Console.WriteLine($"{DateTime.Now.ToString()}: List of permutation completed");
 
       if (passComposer.combination)
       {
+        if (!passComposer.permutation)
+        {
+          //if user cannot select permutation option permutationDictionary is empty, 
+          //add one key with only one value for any records in user info list and start combinations
+          userInfo.infoList.ForEach(info => permutationDictionary.Add(info, new List<string>() { info }));
+          totalList = userInfo.infoList.Count();
+        }
+        //to be defined: i see that when there are more record inside permutation dictionary the 
+        //combination execution time are more expansive, two solution:
+        // - try to execute more task in parallel mode to reduce time to execution
+        // - inform user for more time.
         if (totalList > 10000)
         {
           Console.WriteLine($"The number of permutation is very high, are you sure you want start terms permutation?");
@@ -65,7 +71,7 @@ namespace passgeneretor
           var userChoice = Console.ReadLine();
           if (userChoice.ToLower() == "y")
           {
-            Console.WriteLine($"Go to make a coffee human, and one for me also, the permutation start");
+            Console.WriteLine($"Go to make a coffee human, and one for me also, the combinations are coming...");
             Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
           }
           else

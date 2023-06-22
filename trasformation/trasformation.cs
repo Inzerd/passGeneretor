@@ -8,6 +8,15 @@ namespace passgeneretor.trasformation
   public static class Transformation
   {
     #region permutation methods
+
+    /// <summary>
+    /// Gived a list of terms return a dictionry with key the terms records and value a list 
+    /// of any term permutation with configuration file rule
+    /// </summary>
+    /// <param name="terms">list of user info</param>
+    /// <param name="passComposer"></param>
+    /// <param name="numberOfElementInDictionary">total count for any list inside dictionary</param>
+    /// <returns></returns>
     public static Dictionary<string, List<string>> GetPermutationDictionary(List<string> terms, PassComposerManager passComposer, out int numberOfElementInDictionary)
     {
       numberOfElementInDictionary = 0;
@@ -223,8 +232,6 @@ namespace passgeneretor.trasformation
       return result;
     }
 
-    #region utilsMethods
-    #endregion
   }
   #endregion
 }

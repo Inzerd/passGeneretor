@@ -212,7 +212,7 @@ namespace passgeneretor.trasformation
           }
         }
       }
-      return result.Where(password => passComposer.CheckValidityPassowrd(password)).ToList();
+      return result.Where(password => passComposer.CheckValidityPassword(password)).ToList();
     }
 
     /// <summary>

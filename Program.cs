@@ -16,7 +16,7 @@ namespace passgeneretor
     static void Main(string[] args)
     {
       Console.WriteLine("\n\tWelcome On P4ssG3n3r3Th0r\n");
-      Console.WriteLine("For read manual execute program with -h parameter");
+      Console.WriteLine("To read manual execute program with -h parameter");
 
       #region read param
       if (args.Count() == 0 || (args.Count() == 1 && args[0] == "-h"))
@@ -31,61 +31,72 @@ namespace passgeneretor
       #endregion
 
       #region start the magic
+
+      var permutationDictionary = new Dictionary<string, List<string>>();
+
       if (!(passComposer.permutation && passComposer.combination))
       {
-        Console.WriteLine($"Ehm....");
-        Thread.Sleep(2000);
-        Console.WriteLine("you missing permutation and/or combination parameter");
-        Console.WriteLine("please read manual and try again ;)");
-        Console.WriteLine(WellKnow.manual);
-        return;
-      }
+        Console.WriteLine("you not selected permutation and/or combination parameter, the result are user ");
+        _ = SetDictionaryWithoutPermutation(permutationDictionary);
 
-      Console.WriteLine($"{DateTime.Now.ToString()}: Create a complete list of permutation");
-      var permutationDictionary = new Dictionary<string, List<string>>();
-      int totalList = 0;
-      if (passComposer.permutation)
-      {
-        permutationDictionary = Transformation.GetPermutationDictionary(userInfo.infoList, passComposer, out totalList);
-      }
-
-      Console.WriteLine($"{DateTime.Now.ToString()}: List of permutation completed");
-
-      if (passComposer.combination)
-      {
-        if (!passComposer.permutation)
+        foreach (var key in permutationDictionary.Keys)
         {
-          //if user cannot select permutation option permutationDictionary is empty, 
-          //add one key with only one value for any records in user info list and start combinations
-          userInfo.infoList.ForEach(info => permutationDictionary.Add(info, new List<string>() { info }));
-          totalList = userInfo.infoList.Count();
+          passComposer.WritePassword(permutationDictionary[key]);
         }
-        //to be defined: i see that when there are more record inside permutation dictionary the 
-        //combination execution time are more expansive, two solution:
-        // - try to execute more task in parallel mode to reduce time to execution
-        // - inform user for more time.
-        if (totalList > 10000)
+      }
+      else
+      {
+        int totalList = 0;
+        if (passComposer.permutation)
         {
-          Console.WriteLine($"The number of permutation is very high, are you sure you want start terms permutation?");
-          Console.WriteLine($"Y/y: to start permutation - N/n: to not start permutation");
-          var userChoice = Console.ReadLine();
-          if (userChoice.ToLower() == "y")
+          Console.WriteLine($"{DateTime.Now.ToString()}: Create a complete list of permutation");
+          permutationDictionary = Transformation.GetPermutationDictionary(userInfo.infoList, passComposer, out totalList);
+        }
+
+        Console.WriteLine($"{DateTime.Now.ToString()}: List of permutation completed");
+
+        if (passComposer.combination)
+        {
+          if (!passComposer.permutation)
           {
-            Console.WriteLine($"Go to make a coffee human, and one for me also, the combinations are coming...");
-            Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+            //if user cannot select permutation option permutationDictionary is empty, 
+            //add one key with only one value for any records in user info list and start combinations
+            totalList = SetDictionaryWithoutPermutation(permutationDictionary);
+          }
+          //to be defined: i see that when there are more record inside permutation dictionary the 
+          //combination execution time are more expansive, two solution:
+          // - try to execute more task in parallel mode to reduce time to execution
+          // - inform user for more time.
+          if (totalList > 10000)
+          {
+            Console.WriteLine($"The number of permutation is very high, are you sure you want start terms permutation?");
+            Console.WriteLine($"Y/y: to start permutation - N/n: to not start permutation");
+            var userChoice = Console.ReadLine();
+            if (userChoice.ToLower() == "y")
+            {
+              Console.WriteLine($"Go to make a coffee human, and one for me also, the combinations are coming...");
+              Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+            }
+            else
+            {
+              Console.WriteLine($"Good choice, start to write output file");
+              foreach (var key in permutationDictionary.Keys)
+              {
+                passComposer.WritePassword(permutationDictionary[key]);
+              }
+            }
           }
           else
           {
-            Console.WriteLine($"Good choice, start to write output file");
-            foreach (var key in permutationDictionary.Keys)
-            {
-              passComposer.WritePassword(permutationDictionary[key]);
-            }
+            Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
           }
         }
         else
         {
-          Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+          foreach (var key in permutationDictionary.Keys)
+          {
+            passComposer.WritePassword(permutationDictionary[key]);
+          }
         }
       }
       Console.WriteLine($"{DateTime.Now.ToString()}: End!!!! maybe XD");
@@ -94,6 +105,15 @@ namespace passgeneretor
       #endregion
 
     }
+
+    private static int SetDictionaryWithoutPermutation(Dictionary<string, List<string>> permutationDictionary)
+    {
+      int totalList;
+      userInfo.infoList.ForEach(info => permutationDictionary.Add(info, new List<string>() { info }));
+      totalList = userInfo.infoList.Count();
+      return totalList;
+    }
+
     private static void CheckAndSetmandatoryParamenter(string[] args)
     {
       try

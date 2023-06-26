@@ -222,7 +222,7 @@ namespace passgeneretor
       }
     }
 
-    public bool CheckValidityPassowrd(string passowordToCheck)
+    public bool CheckValidityPassword(string passowordToCheck)
     {
       var result = PasswordRegex.IsMatch(passowordToCheck);
       if (!result)

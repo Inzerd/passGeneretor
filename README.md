@@ -16,22 +16,27 @@ for example run: 'passComposer -p -c -u ./listOfTerm.txt" -o /output.txt -l 8'
 
 Mandatory:
         -u [url]: file info user mandatory
-        -o [url]: output file
         -l [lenght]: password's lenght
-        -c/-p: at least one of these options
 
 Options:
         -rule [cns]: rule from generate password, this options generate a regexp used for validate genereted password:
                 c = use Major and Minor Case
                 n = use number
-                s = use special char
-
-        -t [url]: file with transformation from char/ string to number/ special char/ string or another transformation string
-
-Summary:
+                s = use special char        
+        -o [url]: output file, else tool save output in "passGeneraThor_output.txt"
+        -t [url]: file with transformation from char/ string to number/ special char/ string or another transformation string        
         -c combination: combined any trasfomartion will creating more pass complex
         -p permutation: substitute char in term with Trasformation List rule in configuration json file
         -h manual: show manual in console
+
+Example:
+ - passComposer -p -c -u ./listOfTerm.txt" -o /output.txt -l 8 : return a lst of password with lenght almost of 8 char, the any password are genereted from a combinatione and permutation from listOfTerm
+
+ - passComposer -p -u ./listOfTerm.txt" -l 8: return a list of passord with lenght of 8 char almost, the list are generated from listOfTerm after permutation.
+
+ - passComposer -c -u ./listOfTerm.txt" -l 8: returna list of password with lenght of 8 char almost, the list are genereted from combination of listOTerm.
+
+ - passComposer -u ./listOfTerm.txt" -l 8 -rule cn: return a listOfTerm filtered by lenght and password "rule" 
 
 FUTURE RELEASED:
 

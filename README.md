@@ -47,6 +47,3 @@ syllabe: take the string term passed from user and return new list with same ter
 camelCase: given a single term return its camelCase rapprents
 
 lowerUpper: gived a single term return a list of term with all combination of upper and lower case.
-
-
-

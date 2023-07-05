@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
 
@@ -7,8 +9,35 @@ namespace passgeneretor.trasformation
 {
   public static class Transformation
   {
-    #region permutation methods
+    private static int _numberOfElementInDictionary = 0;
+    private static List<string> _combinationList = new List<string>();
 
+    private static object _lockCombination = null;
+    #region permutation methods
+    public static int NumberOfElementInDictionary
+    {
+      get
+      {
+        return _numberOfElementInDictionary;
+      }
+    }
+
+    /* public static List<string> CombinationList
+    {
+      get
+      {
+        if (_lockCombination == null)
+        {
+          lock (_lockCombination)
+          {
+            if (_lockCombination == null)
+            {
+              return _combinationList;
+            }
+          }
+        }
+      }
+    } */
     /// <summary>
     /// Gived a list of terms return a dictionry with key the terms records and value a list 
     /// of any term permutation with configuration file rule
@@ -17,21 +46,25 @@ namespace passgeneretor.trasformation
     /// <param name="passComposer"></param>
     /// <param name="numberOfElementInDictionary">total count for any list inside dictionary</param>
     /// <returns></returns>
-    public static Dictionary<string, List<string>> GetPermutationDictionary(List<string> terms, PassComposerManager passComposer, out int numberOfElementInDictionary)
+    public static Dictionary<string, List<string>> GetPermutationDictionary(List<string> terms, PassComposerManager passComposer)
     {
-      numberOfElementInDictionary = 0;
-      var result = new Dictionary<string, List<string>>();
-      foreach (var termsToPermutation in terms)
+      _numberOfElementInDictionary = 0;
+      var result = new ConcurrentDictionary<string, List<string>>();
+      Parallel.ForEach(terms,
+      new ParallelOptions { MaxDegreeOfParallelism = passComposer.MaxDegreeOfParallelism },
+      (termToPermutation) =>
       {
-        var value = GetListPermutationed(new List<string>() { termsToPermutation }, passComposer);
+        var value = GetListPermutationed(new List<string>() { termToPermutation }, passComposer);
 
         if (value.Any())
         {
-          numberOfElementInDictionary += value.Count();
-          result.Add(termsToPermutation, value.Distinct().ToList());
+          _numberOfElementInDictionary += value.Count();
+          result.TryAdd(termToPermutation, value.Distinct().ToList());
         }
-      }
-      return result;
+      });
+      return result.ToDictionary(item => item.Key,
+      item => item.Value,
+      result.Comparer);
     }
 
     /// <summary>
@@ -117,7 +150,7 @@ namespace passgeneretor.trasformation
     /// <param name="startIndex"></param>
     /// <param name="previousList"></param>
     /// <returns></returns>
-    public static void WriteListOfCombination(Dictionary<string, List<string>> permutation,
+    public static void CreateAndWriteListOfCombination(Dictionary<string, List<string>> permutation,
     PassComposerManager passComposer, int startIndex = 0, List<string> previousList = null)
     {
       var keyDictionaryCount = permutation.Keys.Count();
@@ -167,7 +200,7 @@ namespace passgeneretor.trasformation
             //non abbiamo ancora raggiunto il limite esterno prepariamo al previous list e richiamiamo se stessa
             var tempList = new List<string>(CombinationList);
             tempList.Add(termFixxed);
-            WriteListOfCombination(permutation, passComposer, iter + 1, tempList);
+            CreateAndWriteListOfCombination(permutation, passComposer, iter + 1, tempList);
           }
         }
       }

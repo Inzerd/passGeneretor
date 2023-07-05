@@ -21,7 +21,7 @@ namespace passgeneretor
       #region read param
       if (args.Count() == 0 || (args.Count() == 1 && args[0] == "-h"))
       {
-        Console.WriteLine(WellKnow.manual);
+        Console.WriteLine(WellKnow.Manual);
         return;
       }
       //check mandatory paramenter
@@ -36,7 +36,7 @@ namespace passgeneretor
 
       if (!(passComposer.permutation && passComposer.combination))
       {
-        Console.WriteLine("you not selected permutation and/or combination parameter, the result are user ");
+        Console.WriteLine("check whether the list of term passed meets the password configuration");
         _ = SetDictionaryWithoutPermutation(permutationDictionary);
 
         foreach (var key in permutationDictionary.Keys)
@@ -50,7 +50,9 @@ namespace passgeneretor
         if (passComposer.permutation)
         {
           Console.WriteLine($"{DateTime.Now.ToString()}: Create a complete list of permutation");
-          permutationDictionary = Transformation.GetPermutationDictionary(userInfo.infoList, passComposer, out totalList);
+          permutationDictionary = Transformation.GetPermutationDictionary(userInfo.infoList, passComposer);
+          totalList = Transformation.NumberOfElementInDictionary;
+
         }
 
         Console.WriteLine($"{DateTime.Now.ToString()}: List of permutation completed");
@@ -69,17 +71,17 @@ namespace passgeneretor
           // - inform user for more time.
           if (totalList > 10000)
           {
-            Console.WriteLine($"The number of permutation is very high, are you sure you want start terms permutation?");
-            Console.WriteLine($"Y/y: to start permutation - N/n: to not start permutation");
+            Console.WriteLine($"The number of permutation is very high, are you sure you want start terms combinations?");
+            Console.WriteLine($"Y/y: to start combination - N/n: to not start combination");
             var userChoice = Console.ReadLine();
             if (userChoice.ToLower() == "y")
             {
               Console.WriteLine($"Go to make a coffee human, and one for me also, the combinations are coming...");
-              Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+              Transformation.CreateAndWriteListOfCombination(permutationDictionary, passComposer, 0);
             }
             else
             {
-              Console.WriteLine($"Good choice, start to write output file");
+              Console.WriteLine($"Good choice, start to write output file with permutation generated");
               foreach (var key in permutationDictionary.Keys)
               {
                 passComposer.WritePassword(permutationDictionary[key]);
@@ -88,7 +90,8 @@ namespace passgeneretor
           }
           else
           {
-            Transformation.WriteListOfCombination(permutationDictionary, passComposer, 0);
+            Console.WriteLine($"Start to create combination and write in one or more file.");
+            Transformation.CreateAndWriteListOfCombination(permutationDictionary, passComposer, 0);
           }
         }
         else

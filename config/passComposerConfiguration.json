@@ -8,5 +8,6 @@
     "s":["$"]
   },
   "DelimitatorList":["_","-"],
-  "MaxNumberOfComposition":3
+  "MaxNumberOfComposition":3,
+  "MaxDegreeOfParallelism":2
 }

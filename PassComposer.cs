@@ -14,7 +14,7 @@ namespace passgeneretor
     public List<string> DelimitatorList { get; set; }
     //max number of Combinations 
     public int MaxNumberOfComposition { get; set; }
-
+    public int MaxDegreeOfParallelism { get; set; }
     public int MaxOutputSize = 31457280;
   }
 
@@ -37,6 +37,96 @@ namespace passgeneretor
     private string _outputPath;
     private int fileSuffixNumer = 0;
 
+    #region property
+    public List<string> GetPassDelimitator
+    {
+      get
+      {
+        if (PassComposerConf != null)
+        {
+          return PassComposerConf.DelimitatorList;
+        }
+        return null;
+      }
+    }
+
+    public IEnumerable<string> TransformationKeyList
+    {
+      get
+      {
+        if (PassComposerConf != null)
+        {
+          return PassComposerConf.TranformationList.Keys;
+        }
+        return null;
+      }
+    }
+
+    public IEnumerable<string> TrasformationValueList(string key)
+    {
+      if (PassComposerConf?.TranformationList != null)
+      {
+        return PassComposerConf.TranformationList[key];
+      }
+      return null;
+    }
+
+    public int MaxNumberOfComposition
+    {
+      get
+      {
+        return PassComposerConf.MaxNumberOfComposition;
+      }
+    }
+
+    public int MaxDegreeOfParallelism
+    {
+      get
+      {
+        return PassComposerConf.MaxDegreeOfParallelism;
+      }
+    }
+    public Regex PasswordRegex
+    {
+      get
+      {
+        if (_regex != null)
+        {
+          return _regex;
+        }
+        var regexString = @$"^"; //start of line
+        string compositionString = string.Empty;
+        if (ruleCaseLetter)
+        {
+          // positivelockhead almost one of a-z and one of A-Z char
+          regexString += @"(?=.*[a-z])(?=.*[A-Z])";
+          compositionString = "a-zA-Z";
+        }
+        if (ruleUseNumber)
+        {
+          //positive lockehead almost one of digit
+          regexString += @"(?=.*\d)";
+          compositionString += @"\d";
+        }
+        if (ruleUseSpecialChar)
+        {
+          //positive lockhead almost one of the special char
+          var specialChar = string.Empty;
+          GetStandardSpecialChar().ForEach(delegate (string term) { specialChar += @$"{term}"; });
+          regexString += @$"(?=.[{specialChar}])";
+          compositionString += $"{specialChar}";
+        }
+        if (!string.IsNullOrEmpty(compositionString))
+        {
+          //almost one of minLenght times
+          regexString += $"[{compositionString}]";
+        }
+        regexString += @$"{{{minLenght},}}"; //add min lengh passowrd check and close line
+        _regex = new Regex(regexString);
+        return _regex;
+      }
+    }
+
     public string OutputFilePath
     {
       get
@@ -50,6 +140,8 @@ namespace passgeneretor
         _outputPath = Path.GetDirectoryName(OutputFilePath);
       }
     }
+    #endregion
+
     #endregion
 
     #region ctor
@@ -102,89 +194,6 @@ namespace passgeneretor
     }
     #endregion
 
-    #region property
-    public List<string> GetPassDelimitator
-    {
-      get
-      {
-        if (PassComposerConf != null)
-        {
-          return PassComposerConf.DelimitatorList;
-        }
-        return null;
-      }
-    }
-
-    public IEnumerable<string> TransformationKeyList
-    {
-      get
-      {
-        if (PassComposerConf != null)
-        {
-          return PassComposerConf.TranformationList.Keys;
-        }
-        return null;
-      }
-    }
-
-    public IEnumerable<string> TrasformationValueList(string key)
-    {
-      if (PassComposerConf?.TranformationList != null)
-      {
-        return PassComposerConf.TranformationList[key];
-      }
-      return null;
-    }
-
-    public int MaxNumberOfComposition
-    {
-      get
-      {
-        return PassComposerConf.MaxNumberOfComposition;
-      }
-    }
-
-    public Regex PasswordRegex
-    {
-      get
-      {
-        if (_regex != null)
-        {
-          return _regex;
-        }
-        var regexString = @$"^"; //start of line
-        string compositionString = string.Empty;
-        if (ruleCaseLetter)
-        {
-          // positivelockhead almost one of a-z and one of A-Z char
-          regexString += @"(?=.*[a-z])(?=.*[A-Z])";
-          compositionString = "a-zA-Z";
-        }
-        if (ruleUseNumber)
-        {
-          //positive lockehead almost one of digit
-          regexString += @"(?=.*\d)";
-          compositionString += @"\d";
-        }
-        if (ruleUseSpecialChar)
-        {
-          //positive lockhead almost one of the special char
-          var specialChar = string.Empty;
-          GetStandardSpecialChar().ForEach(delegate (string term) { specialChar += @$"{term}"; });
-          regexString += @$"(?=.[{specialChar}])";
-          compositionString += $"{specialChar}";
-        }
-        if (!string.IsNullOrEmpty(compositionString))
-        {
-          //almost one of minLenght times
-          regexString += $"[{compositionString}]";
-        }
-        regexString += @$"{{{minLenght},}}"; //add min lengh passowrd check and close line
-        _regex = new Regex(regexString);
-        return _regex;
-      }
-    }
-    #endregion
 
     #region public methods
     public void WritePassword(List<string> passwordList)

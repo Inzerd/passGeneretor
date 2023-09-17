@@ -15,7 +15,8 @@ namespace passgeneretor
     //max number of Combinations 
     public int MaxNumberOfComposition { get; set; }
     public int MaxDegreeOfParallelism { get; set; }
-    public int MaxOutputSize = 31457280;
+
+    public int MaxOutputSize = 314572800;
   }
 
   public class PassComposerManager
@@ -90,38 +91,38 @@ namespace passgeneretor
     {
       get
       {
+        var specialChar = @"<!@#$%^&€*()\-_+""\[\]\\=?{}ç@°#,;.:*€|<>\/";
+        string compositionString = @$"a-zA-Z0-9{specialChar}";
         if (_regex != null)
         {
           return _regex;
         }
-        var regexString = @$"^"; //start of line
-        string compositionString = string.Empty;
+        var regexString = "^"; //start of line
+
         if (ruleCaseLetter)
         {
           // positivelockhead almost one of a-z and one of A-Z char
-          regexString += @"(?=.*[a-z])(?=.*[A-Z])";
-          compositionString = "a-zA-Z";
+          regexString += "(?=.*[a-z])(?=.*[A-Z])";
+          //compositionString = "a-zA-Z";
         }
         if (ruleUseNumber)
         {
           //positive lockehead almost one of digit
-          regexString += @"(?=.*\d)";
-          compositionString += @"\d";
+          regexString += "(?=.*[0-9])";
+          //compositionString += "0-9";
         }
         if (ruleUseSpecialChar)
         {
           //positive lockhead almost one of the special char
-          var specialChar = string.Empty;
-          GetStandardSpecialChar().ForEach(delegate (string term) { specialChar += @$"{term}"; });
-          regexString += @$"(?=.[{specialChar}])";
-          compositionString += $"{specialChar}";
+          regexString += @$"(?=.*[{specialChar}])";
+          //compositionString += $"{specialChar}";
         }
         if (!string.IsNullOrEmpty(compositionString))
         {
           //almost one of minLenght times
           regexString += $"[{compositionString}]";
         }
-        regexString += @$"{{{minLenght},}}"; //add min lengh passowrd check and close line
+        regexString += $"{{{minLenght},}}$"; //add min lengh passowrd check and close line
         _regex = new Regex(regexString);
         return _regex;
       }
@@ -136,8 +137,14 @@ namespace passgeneretor
       set
       {
         _outputFilePath = value;
-        _outputFileName = Path.GetFileNameWithoutExtension(OutputFilePath);
-        _outputPath = Path.GetDirectoryName(OutputFilePath);
+        if (string.IsNullOrEmpty(_outputFileName))
+        {
+          _outputFileName = Path.GetFileNameWithoutExtension(OutputFilePath);
+        }
+        if (string.IsNullOrEmpty(_outputPath))
+        {
+          _outputPath = Path.GetDirectoryName(OutputFilePath);
+        }
       }
     }
     #endregion
@@ -155,24 +162,23 @@ namespace passgeneretor
     {
       if (!File.Exists(urlFileTransform))
       {
-        Console.WriteLine($"Error: -t param need correct Path. Path insert: {urlFileTransform}");
+        Console.WriteLine($"{DateTime.Now}: ERROR: -t param need correct Path. Path insert: {urlFileTransform}");
         //chiudi applicazione
       }
       else
       {
-        if (PassComposerConf == null)
+        PassComposerConf ??= new PassComposerConfiguration
         {
-          PassComposerConf = new PassComposerConfiguration();
-          PassComposerConf.DelimitatorList = GetStandardDeliminatorList();
-          PassComposerConf.MaxNumberOfComposition = 3;
-        }
+          DelimitatorList = GetStandardDeliminatorList(),
+          MaxNumberOfComposition = 3
+        };
 
         PassComposerConf.TranformationList = new Dictionary<string, List<string>>();
         var charToTrasformList = File.ReadAllLines(urlFileTransform);
 
         foreach (var trasformation in charToTrasformList)
         {
-          if (trasformation.Contains("="))
+          if (trasformation.Contains('='))
           {
             var transform = trasformation.Split("=");
             var key = transform[0];
@@ -200,7 +206,6 @@ namespace passgeneretor
     {
       if (!passwordList.Any())
       {
-        Console.WriteLine("cannot write empty password list in output file");
         return;
       }
       try
@@ -222,37 +227,36 @@ namespace passgeneretor
           {
             File.AppendAllLines(OutputFilePath, passwordList);
           }
-
         }
       }
       catch (Exception caught)
       {
-        Console.WriteLine($"ERROR: during write output file: {caught}");
+        Console.WriteLine($"{DateTime.Now}: ERROR: during write output file: {caught}");
       }
     }
 
     public bool CheckValidityPassword(string passowordToCheck)
     {
-      var result = PasswordRegex.IsMatch(passowordToCheck);
-      if (!result)
+      return PasswordRegex.IsMatch(passowordToCheck);
+      /* if (!result)
       {
-        Console.WriteLine($"Password: {passowordToCheck}, not pass Regex check");
+        Console.WriteLine($"{DateTime.Now}: Password: {passowordToCheck}, not pass Regex check");
       }
-      return result;
+      return result; */
     }
     #endregion
 
     #region Private Function
-    private List<string> GetStandardDeliminatorList()
+    private static List<string> GetStandardDeliminatorList()
     {
       return new List<string> { "_", "-" };
     }
 
     private List<string> GetStandardSpecialChar()
     {
-      return new List<string> {"!","\\","\"","£","$","%","&","/",
-      "(",")","=","?","^","[","]","{","}","ç","@","°","#",",",
-      ";",".",":","-","_","*","€","|","<",">",};
+      return new List<string> {"!",@"\", @"""","£","$","%","&","/",
+      "(",")","=","?",@"\]","^", @"\[","{","}","ç","@","°","#",",",
+      ";",".",":",@"\-","_","*","€","|","<",">",};
     }
 
     #endregion

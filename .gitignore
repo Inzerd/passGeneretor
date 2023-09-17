@@ -5,4 +5,5 @@ testing/
 testing/output.txt
 testing/userInfolist.txt
 testing/userTest.txt
+Properties/
 Properties/launchSettings.json

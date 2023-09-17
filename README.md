@@ -30,13 +30,13 @@ Options:
         -h manual: show manual in console
 
 Example:
- - passComposer -p -c -u ./listOfTerm.txt" -o /output.txt -l 8 : return a lst of password with lenght almost of 8 char, the any password are genereted from a combinatione and permutation from listOfTerm
+ - passgeneretor -p -c -u ./listOfTerm.txt" -o /output.txt -l 8 : return a lst of password with lenght almost of 8 char, the any password are genereted from a combinatione and permutation from listOfTerm
 
- - passComposer -p -u ./listOfTerm.txt" -l 8: return a list of passord with lenght of 8 char almost, the list are generated from listOfTerm after permutation.
+ - passgeneretor -p -u ./listOfTerm.txt" -l 8: return a list of passord with lenght of 8 char almost, the list are generated from listOfTerm after permutation.
 
- - passComposer -c -u ./listOfTerm.txt" -l 8: returna list of password with lenght of 8 char almost, the list are genereted from combination of listOTerm.
+ - passgeneretor -c -u ./listOfTerm.txt" -l 8: returna list of password with lenght of 8 char almost, the list are genereted from combination of listOTerm.
 
- - passComposer -u ./listOfTerm.txt" -l 8 -rule cn: return a listOfTerm filtered by lenght and password "rule" 
+ - passgeneretor -u ./listOfTerm.txt" -l 8 -rule cn: return a listOfTerm filtered by lenght and password "rule" 
 
 FUTURE RELEASED:
 

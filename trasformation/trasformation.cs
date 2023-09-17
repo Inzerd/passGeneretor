@@ -10,9 +10,8 @@ namespace passgeneretor.trasformation
   public static class Transformation
   {
     private static int _numberOfElementInDictionary = 0;
-    private static List<string> _combinationList = new List<string>();
 
-    private static object _lockCombination = null;
+    //private static bool printProgess = true;
     #region permutation methods
     public static int NumberOfElementInDictionary
     {
@@ -22,22 +21,6 @@ namespace passgeneretor.trasformation
       }
     }
 
-    /* public static List<string> CombinationList
-    {
-      get
-      {
-        if (_lockCombination == null)
-        {
-          lock (_lockCombination)
-          {
-            if (_lockCombination == null)
-            {
-              return _combinationList;
-            }
-          }
-        }
-      }
-    } */
     /// <summary>
     /// Gived a list of terms return a dictionry with key the terms records and value a list 
     /// of any term permutation with configuration file rule
@@ -58,7 +41,7 @@ namespace passgeneretor.trasformation
 
         if (value.Any())
         {
-          _numberOfElementInDictionary += value.Count();
+          _numberOfElementInDictionary += value.Count;
           result.TryAdd(termToPermutation, value.Distinct().ToList());
         }
       });
@@ -72,6 +55,7 @@ namespace passgeneretor.trasformation
     /// </summary>
     /// <param name="terms">list of term to permutation</param>
     /// <param name="passComposer">object that contain a dictionary to key and value for permutation action</param>
+    /// <param name="addTermNotPermuted">allow to add term not permuted in result list</param>
     /// <returns>return the list of permutation</returns>
     private static List<string> GetListPermutationed(List<string> terms,
     PassComposerManager passComposer, bool addTermNotPermuted = true)
@@ -142,8 +126,13 @@ namespace passgeneretor.trasformation
 
     #region combination methods    
     /// <summary>
-    /// GIved a dictionary key: string value list o string combination any term in dictionary and write in output file the 
-    /// password
+    /// GIved a dictionary key: string, value: list of string  combination any term in dictionary and write in output file the 
+    /// password. 
+    /// Il metodo cicla tutte le chiavi del dizionario, 
+    /// per ogni ciclo di chiave esegue un altro ciclo per tutti i termini della lista di stringhe, salvando di volta in volta i termini
+    /// in previousLIst,
+    /// Una volta raggiunta la condizione maxNumberOfCombination, combina i termini della previousList e scrive le password che
+    /// rispettano le regole impostate
     /// </summary>
     /// <param name="permutation"></param>
     /// <param name="passComposer"></param>
@@ -153,11 +142,10 @@ namespace passgeneretor.trasformation
     public static void CreateAndWriteListOfCombination(Dictionary<string, List<string>> permutation,
     PassComposerManager passComposer, int startIndex = 0, List<string> previousList = null)
     {
-      var keyDictionaryCount = permutation.Keys.Count();
+      var keyDictionaryCount = permutation.Keys.Count;
       var maxNumberOfCombination = passComposer.MaxNumberOfComposition;
-      //cicliamo le chiavi del dizionario e iniziamo a comporre le liste da passare alla funzione che genera le composizioni 
-      //ad ogni ciclo viene passata la lista al passComposer che le scrive nel file
 
+      //foreach any dictionary key dictionary and start create the list of term to pass a composition function
       for (var iter = startIndex; iter < keyDictionaryCount; iter++)
       {
         //if there is main cycle skip, the combination are alredy inside output.
@@ -165,41 +153,55 @@ namespace passgeneretor.trasformation
         {
           continue;
         }
-        //non siamo nella prima chiave del dizionatio quindi aggiungiamo i termini fixxati precedentemente 
+        //else there aren't in main foreach add previus terms fixxed         
         var CombinationList = new List<string>();
         if (previousList != null)
         {
           CombinationList.AddRange(previousList);
         }
 
-        //recuperiamo la lista di termini da combinare tra loro
+        //get the terms list associated to the key selected
         var FixxedDictKey = permutation.Keys.ToArray()[iter];
-        if (!permutation.TryGetValue(FixxedDictKey, out var listOFixxedDictKey))
+        if (startIndex == 0)
         {
-          Console.WriteLine($"Error during processing, for term \"{FixxedDictKey}\", list of permutation for create combination list; this term will skipped");
+          Console.WriteLine("");
+          Console.WriteLine($"{DateTime.Now}: start to compose and write any password for term: {FixxedDictKey}:");
+        }
+        if (!permutation.TryGetValue(FixxedDictKey, out var listOfValuesByKey))
+        {
+          Console.WriteLine($"{DateTime.Now}: Error during processing, for term \"{FixxedDictKey}\", list of permutation for create combination list; this term will skipped");
         }
 
-        //cicliamo la lista e verifichiamo se abbiamo raggiunto il limite oppure no
-        foreach (var termFixxed in listOFixxedDictKey)
+        //foreach the list and check if start combination and write password procedure
+        foreach (var value in listOfValuesByKey)
         {
-          if (CombinationList.Count() == maxNumberOfCombination - 1)
+          if (CombinationList.Count == maxNumberOfCombination - 1)
           {
-            //se abbiamo raggiunto il limite di maxNumberOfCombination cicliamo tutte le lista rimaste nel dizionario
-            //le componiamo e le passiamo alla procedura che scrivera sul file
-            var tempList = new List<string>(CombinationList);
-            tempList.Add(termFixxed);
-            var partialCombinationList = GetCombination(tempList,
-            0,
-            CombinationList.Count(),
-            passComposer);
-            //TODO: data la lista di permutazioni lanciamo la procedura di verifica password e scrittura su file.
-            passComposer.WritePassword(partialCombinationList);
+            //if condition maxNumberOfCombination is valid start combination and write password procedure
+            var tempList = new List<string>(CombinationList)
+            {
+              value
+            };
+            Console.Write(new char[' '], 0, 100);
+            //Console.Write($"\r==>start to compose all combination with terms combination: {tempList[0]}");
+            Console.Write($"\r\t==>start to check and write terms combination: [{string.Join(",", tempList)}]");
+            var partialCombinationList = GetCombinationParallel(tempList,
+              0,
+              CombinationList.Count,
+              passComposer,
+              true);
+            if (partialCombinationList.Any())
+            {
+              passComposer.WritePassword(partialCombinationList);
+            }
           }
           else
           {
-            //non abbiamo ancora raggiunto il limite esterno prepariamo al previous list e richiamiamo se stessa
-            var tempList = new List<string>(CombinationList);
-            tempList.Add(termFixxed);
+            //else save the list 
+            var tempList = new List<string>(CombinationList)
+            {
+              value
+            };
             CreateAndWriteListOfCombination(permutation, passComposer, iter + 1, tempList);
           }
         }
@@ -216,36 +218,63 @@ namespace passgeneretor.trasformation
     /// <param name="passComposer">configuration of pass composer object</param>
     /// <returns>return a list of password filterd by validity check</returns>
     /// <exception cref="ArgumentException"></exception>
-    private static List<string> GetCombination(List<string> terms, int startIndex, int endIndex, PassComposerManager passComposer)
+    private static List<string> GetCombinationParallel(List<string> terms,
+    int startIndex,
+    int endIndex,
+    PassComposerManager passComposer,
+    bool enableParallelization = false)
     {
-      var result = new List<string>();
+      //var result = new List<string>();
+      var result = new ConcurrentBag<string>();
       if (!terms.Any())
       {
-        throw new ArgumentException($"{nameof(GetCombination)}: terms is empty");
+        throw new ArgumentException($"{nameof(GetCombinationParallel)}: terms is empty");
       }
       //there are only tow term in list to combine, return partial list
-      if (terms.Count() == 2)
+      if (terms.Count == 2)
       {
         return GetCombination(terms[0], terms[1], passComposer.GetPassDelimitator);
       }
 
-      //foreach any terms and fix one term and swap other,
-      for (var iterFixxed = startIndex; iterFixxed <= endIndex; iterFixxed++)
+      //foreach any terms and fix one term and swap other,   
+      if (enableParallelization)
       {
-        var termsFixxed = terms[iterFixxed];
-        var cloneList = terms.GetRange(0, terms.Count());
-        cloneList.RemoveAt(iterFixxed);
-        var partialResult = GetCombination(cloneList, iterFixxed + 1, endIndex, passComposer);
-        foreach (var partTerms in partialResult)
+        Parallel.For(startIndex, endIndex + 1,
+        new ParallelOptions { MaxDegreeOfParallelism = passComposer.MaxDegreeOfParallelism },
+        (iterFixxed) =>
         {
-          result.Add($"{termsFixxed}{partTerms}");
-          foreach (var delimitator in passComposer.GetPassDelimitator)
-          {
-            result.Add($"{termsFixxed}{delimitator}{partTerms}");
-          }
+          GetCombination(terms, endIndex, passComposer, iterFixxed, result);
+        });
+      }
+      else
+      {
+        for (var iterFixxed = startIndex; iterFixxed <= endIndex; iterFixxed++)
+        {
+          GetCombination(terms, endIndex, passComposer, iterFixxed, result);
         }
       }
       return result.Where(password => passComposer.CheckValidityPassword(password)).ToList();
+    }
+
+    private static void GetCombination(
+      List<string> terms,
+      int endIndex,
+      PassComposerManager passComposer,
+      int iterFixxed,
+      ConcurrentBag<string> result)
+    {
+      var termsFixxed = terms[iterFixxed];
+      var cloneList = terms.GetRange(0, terms.Count);
+      cloneList.RemoveAt(iterFixxed);
+      var partialResult = GetCombinationParallel(cloneList, iterFixxed + 1, endIndex, passComposer);
+      foreach (var partTerms in partialResult)
+      {
+        result.Add($"{termsFixxed}{partTerms}");
+        foreach (var delimitator in passComposer.GetPassDelimitator)
+        {
+          result.Add($"{termsFixxed}{delimitator}{partTerms}");
+        }
+      }
     }
 
     /// <summary>

@@ -182,7 +182,7 @@ namespace passgeneretor.trasformation
             {
               value
             };
-            Console.Write(new char[' '], 0, 100);
+            //Console.Write(new char[' '], 0, 1);
             //Console.Write($"\r==>start to compose all combination with terms combination: {tempList[0]}");
             Console.Write($"\r\t==>start to check and write terms combination: [{string.Join(",", tempList)}]");
             var partialCombinationList = GetCombinationParallel(tempList,

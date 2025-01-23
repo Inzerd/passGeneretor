@@ -18,7 +18,7 @@ build() {
 
 package() {
   cd "$srcdir/$pkgname-$pkgver"  # Entra nella directory del sorgente
-  install -Dm755 "bin/Release/net6.0/$pkgname" "$pkgdir/usr/bin/$pkgname"  # Installa il binario nella directory di destinazione
+  install -Dm755 "bin/Release/net8.0/$pkgname" "$pkgdir/usr/bin/$pkgname"  # Installa il binario nella directory di destinazione
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"  # Installa il file di licenza
 }
 

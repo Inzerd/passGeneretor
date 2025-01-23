@@ -162,14 +162,10 @@ namespace passgeneretor
         }
         _ = int.TryParse(args[++currentIndex], out passComposer.minLenght);
       }
-      catch (Exception caught)
+      catch 
       {
-#if DEBUG
-        Console.WriteLine($"{DateTime.Now}: Error: {caught}");
-#else
-        Console.WriteLine($"Ops!!!, somethis its go wrong!!! sorry XD");        
-#endif
-        throw new Exception();
+        Console.WriteLine($"Ops!!!, somethis its go wrong!!! sorry XD");
+        throw;
       }
     }
 

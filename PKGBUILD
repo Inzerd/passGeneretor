@@ -1,25 +1,33 @@
 # Maintainer: Inzerd djynze@gmail.com
-pkgname=passgeneretor  # Nome del pacchetto
-pkgver=1.0.0  # Versione del pacchetto
-pkgrel=1  # Numero di rilascio del pacchetto
-pkgdesc="A simple password generator"  # Descrizione del pacchetto
-arch=('x86_64')  # Architettura supportata
-url="https://github.com/Inzerd/passgeneretor"  # URL del progetto
-license=('MIT')  # Licenza del pacchetto
-depends=('dotnet-runtime')  # Dipendenze necessarie per eseguire il pacchetto
-makedepends=('dotnet-sdk')  # Dipendenze necessarie per costruire il pacchetto
-source=("$pkgname-$pkgver::git+https://github.com/Inzerd/passgeneretor.git")  # Sorgente del codice
-sha256sums=('SKIP')  # Checksum del sorgente (SKIP significa che non viene verificato)
+pkgname=passgeneretor 
+pkgver=1.0.0
+corever=('net9.0')
+pkgrel=1
+pkgdesc="A simple password generator"
+arch=('x86_64')
+url="https://github.com/Inzerd/passGeneretor"
+license=('MIT')
+depends=()
+makedepends=('dotnet-sdk')
+source=("$pkgname-$pkgver::git+https://github.com/Inzerd/passGeneretor.git")
+sha256sums=('SKIP')
 
 build() {
-  cd "$srcdir/$pkgname-$pkgver"  # Entra nella directory del sorgente
-  dotnet build --configuration Release  # Costruisce il progetto in modalità Release
+  cd "$srcdir/$pkgname-$pkgver"
+  dotnet restore
+  dotnet publish -c Release -r linux-x64 --self-contained true -p:TrimMode=link
 }
 
 package() {
-  cd "$srcdir/$pkgname-$pkgver"  # Entra nella directory del sorgente
-  install -Dm755 "bin/Release/net8.0/$pkgname" "$pkgdir/usr/bin/$pkgname"  # Installa il binario nella directory di destinazione
-  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"  # Installa il file di licenza
+  install -Dm755 "$srcdir/$pkgname-$pkgver/bin/Release/$corever/linux-x64/publish/$pkgname" "$pkgdir/usr/bin/$pkgname"
+  install -Dm644 "$srcdir/$pkgname-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
 
-# vim:set ts=2 sw=2 et:  # Impostazioni di vim per la formattazione del file
+package_passgenerator() {
+        pkgdesc="A simple password generator"
+        depends=()
+        conflicts=()
+        provides=("passgenerator")
+        replaces=()
+        arch=('x86_64')
+}
